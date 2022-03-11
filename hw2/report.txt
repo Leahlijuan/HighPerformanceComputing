@@ -1,0 +1,16 @@
+
+1. 
+
+val_test01.cpp
+
+error 1: since n = 10, so only allocate 10 ints size to x, but in line 82, when i = 10, it will access to x[10], which is illgal.
+error 2: delete [] x cannot successfully free x;
+
+val_test02.cpp
+
+error 1: Conditional jump or move depends on uninitialised value(s)
+
+line 89 and line 90, since x[6] and x[7] are uninitialised.
+
+solution: initialize x[6] and x[7] before accessing.
+
