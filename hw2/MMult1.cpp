@@ -7,6 +7,10 @@
 
 #define BLOCK_SIZE 16
 
+#define index(i, j, M, N) (i + M * j)
+
+using namespace std;
+
 // Note: matrices are stored in column major order; i.e. the array elements in
 // the (m x n) matrix C are stored in the sequence: {C_00, C_10, ..., C_m0,
 // C_01, C_11, ..., C_m1, C_02, ..., C_0n, C_1n, ..., C_mn}
@@ -26,6 +30,30 @@ void MMult0(long m, long n, long k, double *a, double *b, double *c) {
 
 void MMult1(long m, long n, long k, double *a, double *b, double *c) {
   // TODO: See instructions below
+  for (long j = 0; j < n; j++) {
+    for (long p = 0; p < k; p++) {
+      #pragma omp parallel
+      for (long i = 0; i < m; i++) {
+        double A_ip = a[i+p*m];
+        double B_pj = b[p+j*k];
+        double C_ij = c[i+j*m];
+        C_ij = C_ij + A_ip * B_pj;
+        c[i+j*m] = C_ij;
+      }
+    }
+  }
+}
+
+bool CheckResult(double *c, double *c_ref, long m, long n) {
+  for (long i = 0; i < m; i++) {
+    for (long j = 0; j < n; j++) {
+      if (c[index(i,j,m,n)] != c_ref[index(i,j,m,n)]) {
+        return false;
+      }
+    }
+  }
+  return true;
+
 }
 
 int main(int argc, char** argv) {
@@ -58,8 +86,15 @@ int main(int argc, char** argv) {
       MMult1(m, n, k, a, b, c);
     }
     double time = t.toc();
-    double flops = 0; // TODO: calculate from m, n, k, NREPEATS, time
-    double bandwidth = 0; // TODO: calculate from m, n, k, NREPEATS, time
+
+    // check results
+    bool equal = CheckResult(c, c_ref, m, n);
+    if (!equal) {
+      cerr << "Error: result not the same as expected" << endl;
+    }
+
+    double flops = NREPEATS * (2*k*n*m) / time / 1000000000.0; // TODO: calculate from m, n, k, NREPEATS, time
+    double bandwidth = NREPEATS * 8 * (4*k*n*m) / time / 1000000000.0; // TODO: calculate from m, n, k, NREPEATS, time
     printf("%10d %10f %10f %10f", p, time, flops, bandwidth);
 
     double max_err = 0;
