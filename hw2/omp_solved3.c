@@ -34,7 +34,7 @@ for (i=0; i<N; i++)
   printf("Thread %d starting...\n",tid);
   #pragma omp barrier
 
-  #pragma omp sections nowait
+  #pragma omp sections nowait 
     {
     #pragma omp section
       {
@@ -83,7 +83,7 @@ void print_results(float array[N], int tid, int section)
     printf("\n");
   } /*** end of critical ***/
 
-  #pragma omp barrier
+ //#pragma omp barrier   // remove barrier
   printf("Thread %d done and synchronized.\n", tid); 
 
 }

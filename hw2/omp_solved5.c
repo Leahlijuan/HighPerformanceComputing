@@ -43,9 +43,9 @@ omp_init_lock(&lockb);
       {
       printf("Thread %d initializing a[]\n",tid);
       omp_set_lock(&locka);
+omp_set_lock(&lockb);
       for (i=0; i<N; i++)
         a[i] = i * DELTA;
-      omp_set_lock(&lockb);
       printf("Thread %d adding a[] to b[]\n",tid);
       for (i=0; i<N; i++)
         b[i] += a[i];
@@ -56,10 +56,10 @@ omp_init_lock(&lockb);
     #pragma omp section
       {
       printf("Thread %d initializing b[]\n",tid);
-      omp_set_lock(&lockb);
+omp_set_lock(&locka);      
+omp_set_lock(&lockb);
       for (i=0; i<N; i++)
         b[i] = i * PI;
-      omp_set_lock(&locka);
       printf("Thread %d adding b[] to a[]\n",tid);
       for (i=0; i<N; i++)
         a[i] += b[i];
