@@ -2,20 +2,21 @@
 #include "utils.h"
 #include <math.h>
 #ifdef _OPENMP
-   #include <omp.h>
+#include <omp.h>
 #else
-   #define omp_get_thread_num() 0
+#define omp_get_thread_num() 0
 #endif
 
-#define rev(i, N) (N+1-i)
+#define rev(i, N) (N + 1 - i)
 
 double norm(double **val, long N)
 {
     double s = 0.0;
-    #pragma omp parallel for reduction(+:s)
+#pragma omp parallel for reduction(+ \
+                                   : s)
     for (long i = 1; i <= N; i++)
     {
-	//#pragma omp parallel for reduction(+:s)
+        //#pragma omp parallel for reduction(+:s)
         for (long j = 1; j <= N; j++)
         {
             s += val[i][j] * val[i][j];
@@ -39,8 +40,8 @@ int main(int argc, char **argv)
     double **val = (double **)malloc(sizeof(double *) * (N + 2));
     double h = 1.0 / (N + 1);
     double h2 = h * h;
-#pragma omp parallel for   
- for (long i = 0; i <= N + 1; i++)
+#pragma omp parallel for
+    for (long i = 0; i <= N + 1; i++)
     {
         u[i] = (double *)malloc(sizeof(double) * (N + 2));
         new_u[i] = (double *)malloc(sizeof(double) * (N + 2));
@@ -48,8 +49,8 @@ int main(int argc, char **argv)
         val[i] = (double *)malloc(sizeof(double) * (N + 2));
         a[i] = (double *)malloc(sizeof(double) * (N + 2));
     }
-    // initialize
-    #pragma omp parallel for collapse(2)
+// initialize
+#pragma omp parallel for collapse(2)
     for (long i = 0; i <= N + 1; i++)
     {
         for (long j = 0; j <= N + 1; j++)
@@ -77,42 +78,43 @@ int main(int argc, char **argv)
     // iterations
     for (long iteration = 1; iteration <= K; iteration++)
     {
-        // update red points
-        #pragma omp parallel for collapse(2)
+// update red points
+#pragma omp parallel for collapse(2)
         for (long i = 1; i <= N; i++)
         {
             for (long j = 1; j <= N; j++)
             {
-               
-                if ((i+j)%2 == 0) {
-                    // red points
-                    new_u[i][rev(j,N)] = 0.25*(h2*f[i][rev(j,N)] + u[i-1][rev(j,N)] + u[i][rev(j-1,N)] + u[i+1][rev(j,N)] + u[i][rev(j+1,N)]);
-                } 
-            }
-        }
-        // update black points
-        #pragma omp parallel for collapse(2)
-        for (long i = 1; i <= N; i++)
-        {
-            for (long j = 1; j <= N; j++)
-            {
-               
-                if ((i+j)%2 == 1) {
-                    new_u[i][rev(j,N)] = 0.25*(h2*f[i][rev(j,N)] + new_u[i-1][rev(j,N)] + new_u[i][rev(j-1,N)] + new_u[i+1][rev(j,N)] + new_u[i][rev(j+1,N)]);
-                } 
-            }
-        }
 
+                if ((i + j) % 2 == 0)
+                {
+                    // red points
+                    new_u[i][rev(j, N)] = 0.25 * (h2 * f[i][rev(j, N)] + u[i - 1][rev(j, N)] + u[i][rev(j - 1, N)] + u[i + 1][rev(j, N)] + u[i][rev(j + 1, N)]);
+                }
+            }
+        }
+// update black points
+#pragma omp parallel for collapse(2)
+        for (long i = 1; i <= N; i++)
+        {
+            for (long j = 1; j <= N; j++)
+            {
+
+                if ((i + j) % 2 == 1)
+                {
+                    new_u[i][rev(j, N)] = 0.25 * (h2 * f[i][rev(j, N)] + new_u[i - 1][rev(j, N)] + new_u[i][rev(j - 1, N)] + new_u[i + 1][rev(j, N)] + new_u[i][rev(j + 1, N)]);
+                }
+            }
+        }
 
         u = new_u;
-        // compute ||Au - f||
-        #pragma omp parallel for collapse(2) 
+// compute ||Au - f||
+#pragma omp parallel for collapse(2)
         for (long i = 1; i <= N; i++)
         {
             for (long j = 1; j <= N; j++)
             {
                 double s = 0.0;
-            // #pragma omp parallel for reduction(+:s)
+                // #pragma omp parallel for reduction(+:s)
                 for (long p = 1; p <= N; p++)
                 {
                     s += a[i][p] * u[p][j];
@@ -120,12 +122,13 @@ int main(int argc, char **argv)
                 val[i][j] = s - f[i][j];
             }
         }
-        if (iteration%100==0){
-        double norm_val = norm(val, N);
-        printf("iteration: %ld, the result norm is %f\n", iteration, norm_val);
-}        
+        if (iteration % 100 == 0)
+        {
+            double norm_val = norm(val, N);
+            printf("iteration: %ld, the result norm is %f\n", iteration, norm_val);
+        }
     }
-    #pragma omp parallel for
+#pragma omp parallel for
     for (int i = 0; i <= N + 1; i++)
     {
         free(u[i]);

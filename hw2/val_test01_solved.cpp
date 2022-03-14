@@ -1,14 +1,14 @@
-# include <cstdlib>
-# include <iostream>
+#include <cstdlib>
+#include <iostream>
 
 using namespace std;
 
-int main ( );
-void f ( int n );
+int main();
+void f(int n);
 
 //****************************************************************************80
 
-int main ( )
+int main()
 
 //****************************************************************************80
 //
@@ -23,7 +23,7 @@ int main ( )
 //
 //  Licensing:
 //
-//    This code is distributed under the GNU LGPL license. 
+//    This code is distributed under the GNU LGPL license.
 //
 //  Modified:
 //
@@ -37,10 +37,10 @@ int main ( )
   cout << "  C++ version.\n";
   cout << "  A sample code for analysis by VALGRIND.\n";
 
-  f ( n );
-//
-//  Terminate.
-//
+  f(n);
+  //
+  //  Terminate.
+  //
   cout << "\n";
   cout << "TEST01\n";
   cout << "  Normal end of execution.\n";
@@ -49,7 +49,7 @@ int main ( )
 }
 //****************************************************************************80
 
-void f ( int n )
+void f(int n)
 
 //****************************************************************************80
 //
@@ -59,7 +59,7 @@ void f ( int n )
 //
 //  Licensing:
 //
-//    This code is distributed under the GNU LGPL license. 
+//    This code is distributed under the GNU LGPL license.
 //
 //  Modified:
 //
@@ -69,7 +69,7 @@ void f ( int n )
   int i;
   int *x;
 
-  x = ( int * ) malloc ( n * sizeof ( int ) );
+  x = (int *)malloc(n * sizeof(int));
 
   x[0] = 1;
   cout << "  " << 0 << "  " << x[0] << "\n";
@@ -77,9 +77,9 @@ void f ( int n )
   x[1] = 1;
   cout << "  " << 1 << "  " << x[1] << "\n";
 
-  for ( i = 2; i < n; i++ )
+  for (i = 2; i < n; i++)
   {
-    x[i] = x[i-1] + x[i-2];
+    x[i] = x[i - 1] + x[i - 2];
     cout << "  " << i << "  " << x[i] << "\n";
   }
 

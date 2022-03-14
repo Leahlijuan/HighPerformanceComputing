@@ -2,15 +2,16 @@
 #include "utils.h"
 #include <math.h>
 #ifdef _OPENMP
-   #include <omp.h>
+#include <omp.h>
 #else
-   #define omp_get_thread_num() 0
+#define omp_get_thread_num() 0
 #endif
 
 double norm(double **val, long N)
 {
     double s = 0.0;
-    #pragma omp parallel for reduction(+:s) 
+#pragma omp parallel for reduction(+ \
+                                   : s)
     for (long i = 1; i <= N; i++)
     {
         for (long j = 1; j <= N; j++)
@@ -36,8 +37,8 @@ int main(int argc, char **argv)
     double **val = (double **)malloc(sizeof(double *) * (N + 2));
     double h = 1.0 / (N + 1);
     double h2 = h * h;
-#pragma omp parallel for   
- for (long i = 0; i <= N + 1; i++)
+#pragma omp parallel for
+    for (long i = 0; i <= N + 1; i++)
     {
         u[i] = (double *)malloc(sizeof(double) * (N + 2));
         new_u[i] = (double *)malloc(sizeof(double) * (N + 2));
@@ -45,8 +46,8 @@ int main(int argc, char **argv)
         val[i] = (double *)malloc(sizeof(double) * (N + 2));
         a[i] = (double *)malloc(sizeof(double) * (N + 2));
     }
-    // initialize
-    #pragma omp parallel for collapse(2)
+// initialize
+#pragma omp parallel for collapse(2)
     for (long i = 0; i <= N + 1; i++)
     {
         for (long j = 0; j <= N + 1; j++)
@@ -74,7 +75,7 @@ int main(int argc, char **argv)
     // iterations
     for (long iteration = 1; iteration <= K; iteration++)
     {
-	#pragma omp parallel for  collapse(2)
+#pragma omp parallel for collapse(2)
         for (long i = 1; i <= N; i++)
         {
             for (long j = 1; j <= N; j++)
@@ -83,8 +84,8 @@ int main(int argc, char **argv)
             }
         }
         u = new_u;
-        // compute ||Au - f||
-        #pragma omp parallel for collapse(2)
+// compute ||Au - f||
+#pragma omp parallel for collapse(2)
         for (long i = 1; i <= N; i++)
         {
             for (long j = 1; j <= N; j++)
@@ -97,10 +98,11 @@ int main(int argc, char **argv)
                 val[i][j] = s - f[i][j];
             }
         }
-        if (iteration%100==0){
-        double norm_val = norm(val, N);
-        printf("iteration: %ld, the result norm is %f\n", iteration, norm_val);
-	}        
+        if (iteration % 100 == 0)
+        {
+            double norm_val = norm(val, N);
+            printf("iteration: %ld, the result norm is %f\n", iteration, norm_val);
+        }
     }
 #pragma omp parallel for
     for (int i = 0; i <= N + 1; i++)
