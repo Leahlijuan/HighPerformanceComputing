@@ -5,7 +5,7 @@
 #include <omp.h>
 #include "utils.h"
 
-#define BLOCK_SIZE 16
+#define BLOCK_SIZE 32
 
 #define index(i, j, M, N) (i + M * j)
 
@@ -30,18 +30,29 @@ void MMult0(long m, long n, long k, double *a, double *b, double *c) {
 
 void MMult1(long m, long n, long k, double *a, double *b, double *c) {
   // TODO: See instructions below
-  for (long j = 0; j < n; j++) {
-    for (long p = 0; p < k; p++) {
-      #pragma omp parallel
-      for (long i = 0; i < m; i++) {
-        double A_ip = a[i+p*m];
-        double B_pj = b[p+j*k];
-        double C_ij = c[i+j*m];
-        C_ij = C_ij + A_ip * B_pj;
-        c[i+j*m] = C_ij;
+//#pragma omp parallel for schedule(static,BLOCK_SIZE)
+for (long bj = 0; bj < n; bj += BLOCK_SIZE)
+  {
+    for (long bp = 0; bp < k; bp += BLOCK_SIZE)
+    {
+      for (long bi = 0; bi < m; bi += BLOCK_SIZE)
+      {
+        for (long j = 0; j < BLOCK_SIZE; j++)
+        {
+          for (long p = 0; p < BLOCK_SIZE; p++)
+          {
+            for (long i = 0; i < BLOCK_SIZE; i++)
+            {
+              double A_ip = a[(bi + i) + (bp + p) * m];
+              double B_pj = b[(bp + p) + (bj + j) * k];
+              c[(bi + i) + (bj + j) * m] += A_ip * B_pj;
+            }
+          }
+        }
       }
     }
   }
+           
 }
 
 bool CheckResult(double *c, double *c_ref, long m, long n) {
