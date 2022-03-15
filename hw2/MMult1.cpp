@@ -4,6 +4,11 @@
 #include <math.h>
 #include <omp.h>
 #include "utils.h"
+#ifdef _OPENMP
+    #include <omp.h>
+#else
+    #define omp_get_thread_num() 0
+#endif
 
 #define BLOCK_SIZE 32
 
@@ -35,7 +40,7 @@ void MMult0(long m, long n, long k, double *a, double *b, double *c)
 void MMult1(long m, long n, long k, double *a, double *b, double *c)
 {
   // TODO: See instructions below
-  //#pragma omp parallel for schedule(static,BLOCK_SIZE)
+  #pragma omp parallel for 
   for (long bj = 0; bj < n; bj += BLOCK_SIZE)
   {
     for (long bp = 0; bp < k; bp += BLOCK_SIZE)

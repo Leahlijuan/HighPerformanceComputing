@@ -5,7 +5,7 @@ q1:
 	g++ -std=c++11 val_test02_solved.cpp -o val_test02_solved
 
 q2:
-	g++ -fopenmp -std=c++11 MMult1.cpp -o MMult1
+	g++ -O2 -fopenmp -march=native -std=c++11 MMult1.cpp -o MMult1
 
 q3:
     
