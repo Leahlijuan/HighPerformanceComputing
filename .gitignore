@@ -33,8 +33,4 @@
 
 
 
-# file without extension
-*
-!*.*
-
 .vscode/
