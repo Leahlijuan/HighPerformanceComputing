@@ -23,7 +23,6 @@ void scan_omp(long* prefix_sum, const long* A, long n) {
   {
     num_threads = omp_get_num_threads();
     segment_length = (n + num_threads - 1) / num_threads;
-
     #pragma omp for
     for (long i = 0; i < num_threads; i++)
     {
@@ -59,6 +58,7 @@ for (long i = segment_start + 1; i < segment_end; i++) {
       prefix_sum[i] += prefix_sum[segment_start - 1];
     }
   }
+printf("Number of threads: %d\n",num_threads);
 }
 
 int main() {
