@@ -3,15 +3,6 @@
 #include <math.h>
 #include <stdlib.h>
 
-// Swap two pointers
-void swap(double **u1, double **u2)
-{
-    double *tmp = *u1;
-    *u1 = *u2;
-    *u2 = tmp;
-}
-
-// Sum the neighboring coordinates of a vectorized array
 double sum_of_neighbors(int N, double *u, int i, int j)
 {
     double val_left = 0.0, val_right = 0.0, val_up = 0.0, val_down = 0.0;
@@ -36,7 +27,6 @@ double sum_of_neighbors(int N, double *u, int i, int j)
     return val_left + val_right + val_up + val_down;
 }
 
-// Multiplication by discretized negative Laplacian matrix
 void A_times(int N, double *u, double *ret)
 {
     double h_sq = 1.0 / ((N + 1) * (N + 1));
@@ -56,14 +46,10 @@ void A_times(int N, double *u, double *ret)
     }
 }
 
-// Compute the norm of the residual
 double residual(int N, double *u, double *f)
 {
-    // Multiply by objective matrix
     double *Au = (double *)malloc(N * N * sizeof(double));
     A_times(N, u, Au);
-
-    // Accumulate squared norm
     double residual_norm_sq = 0.0;
     for (int i = 0; i < N * N; i++)
     {
@@ -75,14 +61,12 @@ double residual(int N, double *u, double *f)
     return sqrt(residual_norm_sq);
 }
 
-// Parallel iteration
 void jacobi_iters_par(int N, int iters, double *f, double *u_prev, double *u)
 {
     double h_sq = 1.0 / ((N + 1) * (N + 1));
 
     for (int ix = 0; ix < iters; ix++)
     {
-        // Set u to the next iteration step
 
         for (int i = 0; i < N; i++)
         {
@@ -95,16 +79,19 @@ void jacobi_iters_par(int N, int iters, double *f, double *u_prev, double *u)
         }
 
         // Swap u and u_prev
-        swap(&u, &u_prev);
+        double *tmp = u;
+        u = u_prev;
+        u_prev = tmp;
     }
 
-    // Swap one more time so that u contains the latest update
-    swap(&u, &u_prev);
+    // swap
+    double *tmp = u;
+    u = u_prev;
+    u_prev = tmp;
 }
 
 #define BLOCK_SIZE 32
 
-// Kernel for one step of Jacobi iteration
 __global__ void jacobi_kernel(double *u, const double *f, const double *u_prev, double h_sq, long N)
 {
     int i = blockIdx.x * blockDim.x + threadIdx.x;
@@ -174,8 +161,8 @@ void jacobi_wrapper(double *u, const double *f, long N, long iters)
 int main(int argc, char **argv)
 {
     // General setup
-    int N = atoi(argv[1]);
-    int iters = atoi(argv[2]);
+    long N = read_option<long>("-n", argc, argv);
+    long iters = 5000;
 
     Timer timer;
 
@@ -195,15 +182,13 @@ int main(int argc, char **argv)
     }
 
     printf("CPU:\n");
-    printf("Initial residual: %3f\n", residual(N, u, f));
-
     timer.tic();
     jacobi_iters_par(N, iters, f, u, u_prev);
 
     double time = timer.toc();
 
-    printf("Final residual:   %3f\n", residual(N, u, f));
-    printf("Time (seconds):   %3f\n\n", time);
+    printf("residual:   %3f\n", residual(N, u, f));
+    printf("time:   %3f\n\n", time);
 
     free(u_prev);
     free(u);
@@ -216,14 +201,13 @@ int main(int argc, char **argv)
     }
 
     printf("GPU:\n");
-    printf("Initial residual: %3f\n", residual(N, u, f));
 
     timer.tic();
     jacobi_wrapper(u, f, N, iters);
     time = timer.toc();
 
-    printf("Final residual:   %3f\n", residual(N, u, f));
-    printf("Time (seconds):   %3f\n\n", time);
+    printf("residual:   %3f\n", residual(N, u, f));
+    printf("time:   %3f\n\n", time);
 
     free(f);
     cudaFree(u);

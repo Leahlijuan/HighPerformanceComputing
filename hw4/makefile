@@ -1,19 +1,8 @@
+all: q1 q2
 
-   
-CXX = g++
-CXXFLAGS = -std=c++11 -O3 -march=native -fopenmp
+q1:
+	nvcc -std=c++11 -o inner_product inner_product.cu
+	nvcc -std=c++11 -o matrix matrix.cu
 
-# turning off auto-vectorization since this can make hand-vectorized code slower
-CXXFLAGS += -fno-tree-vectorize
-
-TARGETS = $(basename $(wildcard *.cpp))
-
-all : $(TARGETS)
-
-%:%.cpp *.h
-	$(CXX) $(CXXFLAGS) $< $(LIBS) -o $@
-
-clean:
-	-$(RM) $(TARGETS) *~
-
-.PHONY: all, clean
+q2:
+	nvcc -std=c++11 -o jacobi jacobi.cu
